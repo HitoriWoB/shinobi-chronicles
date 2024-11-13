@@ -1221,7 +1221,7 @@ class System {
 
         $system = new System(
             db: new Database($host, $username, $password, $database),
-            router: new Router($web_url),
+            router: Router::load($web_url),
             SC_OPEN: $SC_OPEN,
             USE_NEW_BATTLES: $USE_NEW_BATTLES ?? self::USE_NEW_BATTLES,
             war_enabled: $WAR_ENABLED ?? self::WAR_ENABLED,
@@ -1243,11 +1243,11 @@ class System {
             'view' => 'none',
             // TODO: This can be removed, header API has the two links used available
             'links' => [
-                'news_api' => $system->router->api_links['news'],
+                'news_api' => $system->router->getApiLink('news'),
                 'logout' => $system->router->base_url . '?logout=1',
-                'profile' => $system->router->getUrl('profile'),
-                'github' => $system->router->links['github'],
-                'discord' => $system->router->links['discord'],
+                'profile' => $system->router->getPageLink('profile'),
+                'github' => $system->router->ext_links['github'],
+                'discord' => $system->router->ext_links['discord'],
                 'support' => $system->router->base_url . 'support.php',
                 'login_url' => $system->router->base_url,
                 'register_url' => $system->router->base_url,

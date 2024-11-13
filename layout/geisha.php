@@ -31,10 +31,10 @@ HTML;
 
 $top_menu = <<<HTML
 <ul>
-	<li><a href='{$system->router->links['news']}'>News</a></li>
-	<li><a href='{$system->router->links['discord']}' target='_blank'>Discord</a></li>
+	<li><a href='{$system->router->getPageLink('news')}'>News</a></li>
+	<li><a href='{$system->router->ext_links['discord']}' target='_blank'>Discord</a></li>
 	<li><a href='{$system->router->base_url}manual.php'>Manual</a></li>
-	<li><a href='{$system->router->links['github']}'>GitHub</a></li>
+	<li><a href='{$system->router->ext_links['github']}'>GitHub</a></li>
 	<li><a href='{$system->router->base_url}rules.php'>Rules</a></li>
 	<li><a href='{$system->router->base_url}support.php'>Support</a></li>
 </ul>

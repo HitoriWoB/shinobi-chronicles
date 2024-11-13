@@ -31,14 +31,14 @@ class Route {
         public ?int $min_rank = null,
 
         public bool $battle_ok = true,
-        public bool $survivial_mission_ok = true,
-        public bool $challenge_lock_oky = true,
+        public bool $survival_mission_ok = true,
+        public bool $challenge_lock_ok = true,
 
         public ?Closure $user_check = null,
         public bool $dev_only = false,
 
         public array $allowed_location_types = self::DEFAULT_ACCESS,
-        public bool $location_access_mode = self::LOCATION_ACCESS_INCLUSIVE,
+        public array $location_access_mode = self::LOCATION_ACCESS_INCLUSIVE,
 
         public bool $render_header = true,
         public bool $render_sidebar = true,
@@ -49,7 +49,7 @@ class Route {
     public static function load(
         string $file_name, string $title, string $function_name, string $menu,
         ?int $battle_type = null, ?int $min_rank = null,
-        bool $battle_ok = true, bool $survivial_mission_ok = true, bool $challenge_lock_oky = true,
+        bool $battle_ok = true, bool $survival_mission_ok = true, bool $challenge_lock_ok = true,
         ?Closure $user_check = null, bool $dev_only = false,
         ?array $allowed_location_types = [], bool $location_access_mode = self::LOCATION_ACCESS_INCLUSIVE,
         bool $render_header = true, bool $render_sidebar = true, bool $render_topbar = true, bool $render_content = true
@@ -63,8 +63,8 @@ class Route {
             battle_type: $battle_type,
             min_rank: $min_rank,
             battle_ok: $battle_ok,
-            survivial_mission_ok: $survivial_mission_ok,
-            challenge_lock_oky: $challenge_lock_oky,
+            survival_mission_ok: $survival_mission_ok,
+            challenge_lock_ok: $challenge_lock_ok,
             user_check: $user_check,
             dev_only: $dev_only,
 
@@ -82,18 +82,18 @@ class Route {
             // Inclusive access, only provided are allowed
             if($location_access_mode == Route::LOCATION_ACCESS_INCLUSIVE) {
                 // All location types restriced by default
-                $this->allowed_location_types = array_fill_keys($this->allowed_location_types, false);
+                $route->allowed_location_types = array_fill_keys($route->allowed_location_types, false);
 
                 // Allow appropriate location types
                 foreach($allowed_location_types as $location) {
-                    $this->allowed_location_types[$location] = true;
+                    $route->allowed_location_types[$location] = true;
                 }
             }
             // Exclusive access, all but provided are allowed
             else {
                 // Restrict provided location types
                 foreach($allowed_location_types as $location) {
-                    $this->allowed_location_types[$location] = false;
+                    $route->allowed_location_types[$location] = false;
                 }
             }
         }

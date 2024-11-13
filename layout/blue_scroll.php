@@ -41,10 +41,10 @@ HTML;
 
 $top_menu = <<<HTML
 <ul>
-	<li><a id='topMenuOption-News' href='{$system->router->links['news']}'>News</a></li>
-	<li><a id='topMenuOption-Discord' href='{$system->router->links['discord']}' target='_blank'>Discord</a></li>
+	<li><a id='topMenuOption-News' href='{$system->router->getPageLink('news')}'>News</a></li>
+	<li><a id='topMenuOption-Discord' href='{$system->router->ext_links['discord']}' target='_blank'>Discord</a></li>
 	<li><a id='topMenuOption-Manual' href='{$system->router->base_url}manual.php'>Manual</a></li>
-	<li><a id='topMenuOption-Github' href='https://github.com/elementum-games/shinobi-chronicles' target='_blank'>Github</a></li>
+	<li><a id='topMenuOption-Github' href='{$system->router->ext_links['github']}' target='_blank'>Github</a></li>
 	<li><a id='topMenuOption-Rules' href='{$system->router->base_url}rules.php'>Rules</a></li>
 	<li><a id='topMenuOption-Terms' href='{$system->router->base_url}terms.php'>Terms of Service</a></li>
 	<li><a id='topMenuOption-Manual' href='{$system->router->base_url}support.php'>Support</a></li>

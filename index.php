@@ -212,7 +212,8 @@ else {
                 $system->layout->renderAfterContentHTML(
                     system: $system,
                     player: $player ?? null,
-                    page_load_time: (microtime(as_float: true) - $PAGE_LOAD_START)
+                    page_load_time: (microtime(as_float: true) - $PAGE_LOAD_START),
+                    render_hotbar: $system->isDevEnvironment()
                 );
                 exit; // IMPORTANT: Exit here, unauthorized pages shouldn't commit transactions
             }
@@ -271,7 +272,7 @@ $system->layout->renderAfterContentHTML(
     player: $player ?? null,
     page_load_time: (microtime(as_float: true) - $PAGE_LOAD_START),
 
-    render_header: $route ? $route->render_header : false, render_sidebar: $route ? $route->render_sidebar : false,
-    render_topbar: $route ? $route->render_topbar : false, render_content: $route ? $route->render_content : false
+    render_content: $route->render_content,
+    render_hotbar: ($system->isDevEnvironment())
 );
 $system->db->commitTransaction();
