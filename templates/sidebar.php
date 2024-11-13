@@ -19,8 +19,8 @@ $NavigationAPIManager = NavigationAPIManager::loadNavigationAPIManager($system, 
         ReactDOM.render(
             React.createElement(Sidebar, {
                 links: {
-                    navigation_api: "<?= $system->router->api_links['navigation'] ?>",
-                    user_api: "<?= $system->router->api_links['user'] ?>",
+                    navigation_api: "<?= $system->router->getApiLink('navigation') ?>",
+                    user_api: "<?= $system->router->getApiLink('user') ?>",
                 },
                 navigationAPIData: {
                     userMenu: <?= json_encode(NavigationAPIPresenter::menuLinksResponse($NavigationAPIManager->getUserMenu())) ?>,

@@ -174,7 +174,7 @@ return $routes = [
         function_name: 'clan',
         menu: 'conditional',
     ),
-    'ancient_market' => Route::load(
+    'premium' => Route::load(
         file_name: 'premium_shop.php',
         title: 'Ancient Market',
         function_name: 'premiumShop',

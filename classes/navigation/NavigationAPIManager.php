@@ -44,7 +44,7 @@ class NavigationAPIManager {
                     title: "Support Panel",
                     url: $this->system->router->getPageLink('manage_support'),
                     active: true,
-                    id: "manage_support",
+                    id: 0,
                 );
             }
             if ($this->player->isModerator()) {
@@ -52,7 +52,7 @@ class NavigationAPIManager {
                     title: "Mod Panel",
                     url: $this->system->router->getPageLink('mod_panel'),
                     active: true,
-                    id: "mod_panel",
+                    id: 0,
                 );
             }
             if ($this->player->hasAdminPanel()) {
@@ -60,7 +60,7 @@ class NavigationAPIManager {
                     title: "Admin Panel",
                     url: $this->system->router->getPageLink('admin_panel'),
                     active: true,
-                    id: "admin_panel",
+                    id: 0,
                 );
             }
         }
@@ -83,11 +83,11 @@ class NavigationAPIManager {
 
         // Filter menu
         foreach($this->routes as $page_name => $route) {
-            if(!isset($page->menu) || $page->menu != $menu_name || ($page->dev_only && !$this->system->isDevEnvironment())) {
+            if(!isset($route->menu) || $route->menu != $menu_name || ($route->dev_only && !$this->system->isDevEnvironment())) {
                 continue;
             }
             $return_arr[] = new NavigationLinkDto(
-                title: $page->title,
+                title: $route->title,
                 url: $this->system->router->getPageLink($page_name),
                 active: true,
                 id: $page_name

@@ -19,7 +19,7 @@ $NotificationAPIManager = new NotificationAPIManager($system, $player);
         ReactDOM.render(
             React.createElement(Topbar, {
                 links: {
-                    notification_api: "<?= $system->router->api_links['notification'] ?>",
+                    notification_api: "<?= $system->router->getApiLink('notification') ?>",
                 },
                 notificationAPIData: {
                     userNotifications: <?= json_encode(NotificationAPIPresenter::userNotificationResponse($NotificationAPIManager)) ?>,

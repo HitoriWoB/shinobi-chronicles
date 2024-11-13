@@ -19,12 +19,12 @@ $UserAPIManager = new UserAPIManager($system, $player);
         ReactDOM.render(
             React.createElement(Hotbar, {
                 links: {
-                    user_api: "<?= $system->router->api_links['user'] ?>",
-                    training: "<?= $system->router->links['training'] ?>",
-                    arena: "<?= $system->router->links['arena'] ?>",
-                    mission: "<?= $system->router->links['mission'] ?>",
-                    special_missions: "<?= $system->router->links['special_missions'] ?>",
-                    healingShop: "<?= $system->router->links['healingShop'] ?>",
+                    user_api: "<?= $system->router->getApiLink('user') ?>",
+                    training: "<?= $system->router->getPageLink('training') ?>",
+                    arena: "<?= $system->router->getPageLink('arena') ?>",
+                    mission: "<?= $system->router->getPageLink('mission') ?>",
+                    special_missions: "<?= $system->router->getPageLink('special_mission') ?>",
+                    healingShop: "<?= $system->router->getPageLink('ramen_shop') ?>",
                     base_url: "<?= $system->router->base_url ?>"
                 },
                 userAPIData: {

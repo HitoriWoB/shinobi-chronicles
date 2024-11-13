@@ -24,11 +24,11 @@ https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js
             React.createElement(Profile, {
                 isDevEnvironment: Boolean(<?= (int)$system->isDevEnvironment() ?>),
                 links: {
-                    clan: "<?= $system->router->getUrl('clan') ?>",
-                    team: "<?= $system->router->getUrl('team') ?>",
-                    bloodlinePage: "<?= $system->router->getUrl('bloodline') ?>",
-                    buyBloodline: "<?= $system->router->getUrl('premium', ['view' => 'bloodlines']) ?>",
-                    buyForbiddenSeal: "<?= $system->router->getUrl('premium', ['view' => 'forbidden_seal']) ?>",
+                    clan: "<?= $system->router->getPageLink('clan') ?>",
+                    team: "<?= $system->router->getPageLink('team') ?>",
+                    bloodlinePage: "<?= $system->router->getPageLink('bloodline') ?>",
+                    buyBloodline: "<?= $system->router->getPageLink('premium', ['view' => 'bloodlines']) ?>",
+                    buyForbiddenSeal: "<?= $system->router->getPageLink('premium', ['view' => 'forbidden_seal']) ?>",
                 },
                 playerData: <?= json_encode(
                     UserAPIPresenter::playerDataResponse(player: $player, rank_names: RankManager::fetchNames($system))
