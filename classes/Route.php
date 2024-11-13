@@ -4,7 +4,7 @@ class Route {
     const LOCATION_ACCESS_EXCLUSIVE = false; // all but given locations are allowed
 
     // Default access to locations (default is typically true)
-    const DEFAULT_ACCESS = [
+    const DEFAULT_LOCATION_TYPES = [
         TravelManager::LOCATION_TYPE_DEFAULT => true,
         TravelManager::LOCATION_TYPE_HOME_VILLAGE => true,
         TravelManager::LOCATION_TYPE_ALLY_VILLAGE => true,
@@ -37,8 +37,8 @@ class Route {
         public ?Closure $user_check = null,
         public bool $dev_only = false,
 
-        public array $allowed_location_types = self::DEFAULT_ACCESS,
-        public array $location_access_mode = self::LOCATION_ACCESS_INCLUSIVE,
+        public array $allowed_location_types = self::DEFAULT_LOCATION_TYPES,
+        public bool $location_access_mode = self::LOCATION_ACCESS_INCLUSIVE,
 
         public bool $render_header = true,
         public bool $render_sidebar = true,
@@ -68,8 +68,8 @@ class Route {
             user_check: $user_check,
             dev_only: $dev_only,
 
-            allowed_location_types: $allowed_location_types,
-            location_access_mode: Route::DEFAULT_ACCESS,
+            allowed_location_types: Route::DEFAULT_LOCATION_TYPES,
+            location_access_mode: $location_access_mode,
 
             render_header: $render_header,
             render_sidebar: $render_sidebar,

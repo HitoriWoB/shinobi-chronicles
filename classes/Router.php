@@ -11,7 +11,8 @@ class Router {
     public function __construct(
         public readonly array $routes,
         public readonly string $base_url,
-        public readonly ?string $current_route,
+        public readonly string $lougout_url,
+        public ?string $current_route,
         public readonly array $ext_links = [
             'github' => 'https://github.com/elementum-games/shinobi-chronicles',
             'discord' => 'https://discord.gg/Kx52dbXEf3',
@@ -48,7 +49,7 @@ class Router {
         return $url;
     }
 
-    public function setCurrentRoute(string $param_name, string $param_value): null {
+    public function setCurrentRoute(string $param_name, string $param_value): void {
         if(is_null($this->current_route)) {
             $this->current_route = $this->base_url . '?'. $param_name . "=" . $param_value;
         }
@@ -140,6 +141,7 @@ class Router {
         return new Router(
             routes: require __DIR__ . '/../config/routes.php',
             base_url: $base_url,
+            logout_url: $base_url . "?logout=1",
             current_route: null
         );
     }

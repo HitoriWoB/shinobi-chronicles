@@ -189,7 +189,7 @@ return $routes = [
     ),
 
     // Staff menu
-    'manage_support' => Route::load(
+    'support_panel' => Route::load(
         file_name: 'supportPanel.php',
         title: 'Support Panel',
         function_name: 'supportPanel',
