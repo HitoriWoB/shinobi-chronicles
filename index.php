@@ -68,7 +68,7 @@ else {
         );
 
         require(__DIR__ . '/pages/' . $route->file_name);
-        ($route->function_name())();
+        ($route->function_name)();
     }
     // User ban
     elseif($player->checkBan(StaffManager::BAN_TYPE_GAME)) {
@@ -91,7 +91,7 @@ else {
 
         // Load user record
         require (__DIR__ . '/pages/' . $route->file_name);
-        ($route->function_name())();
+        ($route->function_name)();
     }
     // IP ban
     else if(Auth::checkForIPBan(system: $system, ip: $_SERVER['REMOTE_ADDR'])) {
@@ -238,7 +238,7 @@ else {
 
             require(__DIR__ . '/pages/' . $route->file_name);
             try {
-                ($route->function)();   
+                ($route->function_name)();   
             } catch(DatabaseDeadlockException $e) {
                 // Wait random time between 100-500ms, then retry deadlocked transaction
                 $system->db->rollbackTransaction();
