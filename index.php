@@ -18,7 +18,7 @@ if(isset($_GET['logout']) && $_GET['logout'] == 1) {
 }
 
 // Logged out
-if(!isset($_SESSION['userid'])) {
+if(!isset($_SESSION['user_id'])) {
     $route = $system->router->routes['home'];
     $system->layout->renderBeforeContentHTML(
         system: $system,

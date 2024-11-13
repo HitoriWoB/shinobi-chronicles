@@ -35,7 +35,7 @@ class Auth {
             return true;
         }
 
-        if(isset($_SESSION['userid']) && in_array($_SESSION['user_id'], System::$developers)) {
+        if(isset($_SESSION['user_id']) && in_array($_SESSION['user_id'], System::$developers)) {
             return true;
         }
 
