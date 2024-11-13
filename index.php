@@ -68,7 +68,7 @@ else {
         );
 
         require(__DIR__ . '/pages/' . $route->file_name);
-        ($route->function())();
+        ($route->function_name())();
     }
     // User ban
     elseif($player->checkBan(StaffManager::BAN_TYPE_GAME)) {
