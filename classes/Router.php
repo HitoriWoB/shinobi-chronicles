@@ -11,7 +11,7 @@ class Router {
     public function __construct(
         public readonly array $routes,
         public readonly string $base_url,
-        public readonly string $lougout_url,
+        public readonly string $logout_url,
         public ?string $current_route,
         public readonly array $ext_links = [
             'github' => 'https://github.com/elementum-games/shinobi-chronicles',
