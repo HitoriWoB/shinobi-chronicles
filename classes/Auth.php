@@ -30,6 +30,25 @@ class Auth {
         return $user;
     }
 
+    public static function displayErrors(System $system): bool {
+        if($system->isDevEnvironment()) {
+            return true;
+        }
+
+        if(isset($_SESSION['userid']) && in_array($_SESSION['user_id'], System::$developers)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    public static function checkForIPBan(System $system, string $ip): bool {
+        $ip = $system->db->clean($ip); // Prep for DB use as precaution
+        $system->db->query("SELECT `id` FROM `banned_ips` WHERE `ip_address`='$ip' LIMIT 1");
+
+        return ($system->db->last_num_rows) ? true : false;
+    }
+
     public static function processLogin(System $system, string $user_name, string $password): void {
         try {
             // These are dependent, inclusive check premitted

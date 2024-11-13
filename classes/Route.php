@@ -1,8 +1,19 @@
 <?php
-
 class Route {
     const LOCATION_ACCESS_INCLUSIVE = true; // only given locations are allowed, default
     const LOCATION_ACCESS_EXCLUSIVE = false; // all but given locations are allowed
+
+    // Default access to locations (default is typically true)
+    const DEFAULT_ACCESS = [
+        TravelManager::LOCATION_TYPE_DEFAULT => true,
+        TravelManager::LOCATION_TYPE_HOME_VILLAGE => true,
+        TravelManager::LOCATION_TYPE_ALLY_VILLAGE => true,
+        TravelManager::LOCATION_TYPE_ENEMY_VILLAGE => true,
+        TravelManager::LOCATION_TYPE_ABYSS => true,
+        TravelManager::LOCATION_TYPE_COLOSSEUM => true,
+        TravelManager::LOCATION_TYPE_TOWN => true,
+        TravelManager::LOCATION_TYPE_CASTLE => true,
+    ];
 
     const MENU_USER = 'user';
     const MENU_ACTIVITY = 'activity';
@@ -10,75 +21,83 @@ class Route {
     const MENU_CONDITIONAL = 'conditional';
     const MENU_NONE = 'none';
 
-    public string $file_name;
-    public string $title;
-    public string $function_name;
-    public string $menu;
-
-    public ?int $battle_type = null;
-    public ?int $min_rank = null;
-
-    public bool $battle_ok = true;
-    public bool $survival_mission_ok = true;
-    public bool $challenge_lock_ok = true;
-
-    public ?Closure $user_check = null;
-    public bool $dev_only = false;
-
-    public array $allowed_location_types = [];
-
     public function __construct(
-        string $file_name,
-        string $title,
-        string $function_name,
-        string $menu,
-        ?int $battle_type = null,
-        ?int $min_rank = null,
-        bool $battle_ok = true,
-        bool $survival_mission_ok = true,
-        bool $challenge_lock_ok = true,
-        ?Closure $user_check = null,
-        bool $dev_only = false,
-        array $allowed_location_types = [],
-        bool $location_access_mode = self::LOCATION_ACCESS_INCLUSIVE,
-    ) {
-        $this->file_name = $file_name;
-        $this->title = $title;
-        $this->function_name = $function_name;
-        $this->menu = $menu;
-        $this->battle_type = $battle_type;
-        $this->min_rank = $min_rank;
-        $this->battle_ok = $battle_ok;
-        $this->survival_mission_ok = $survival_mission_ok;
-        $this->challenge_lock_ok = $challenge_lock_ok;
-        $this->user_check = $user_check;
-        $this->dev_only = $dev_only;
+        public string $file_name,
+        public string $title,
+        public string $function_name,
+        public string $menu,
 
-        // default access to all locations
-        $this->allowed_location_types = [
-            TravelManager::LOCATION_TYPE_DEFAULT => true,
-            TravelManager::LOCATION_TYPE_HOME_VILLAGE => true,
-            TravelManager::LOCATION_TYPE_ALLY_VILLAGE => true,
-            TravelManager::LOCATION_TYPE_ENEMY_VILLAGE => true,
-            TravelManager::LOCATION_TYPE_ABYSS => true,
-            TravelManager::LOCATION_TYPE_COLOSSEUM => true,
-            TravelManager::LOCATION_TYPE_TOWN => true,
-            TravelManager::LOCATION_TYPE_CASTLE => true,
-        ];
+        public ?int $battle_type = null,
+        public ?int $min_rank = null,
 
-        if (count($allowed_location_types) > 0) {
-            if ($location_access_mode == self::LOCATION_ACCESS_INCLUSIVE) {
-                foreach ($this->allowed_location_types as $key => $value) {
-                    $this->allowed_location_types[$key] = false;
-                }
-                foreach ($allowed_location_types as $location) {
+        public bool $battle_ok = true,
+        public bool $survivial_mission_ok = true,
+        public bool $challenge_lock_oky = true,
+
+        public ?Closure $user_check = null,
+        public bool $dev_only = false,
+
+        public array $allowed_location_types = self::DEFAULT_ACCESS,
+        public bool $location_access_mode = self::LOCATION_ACCESS_INCLUSIVE,
+
+        public bool $render_header = true,
+        public bool $render_sidebar = true,
+        public bool $render_topbar = true,
+        public bool $render_content = true,
+    ){}
+
+    public static function load(
+        string $file_name, string $title, string $function_name, string $menu,
+        ?int $battle_type = null, ?int $min_rank = null,
+        bool $battle_ok = true, bool $survivial_mission_ok = true, bool $challenge_lock_oky = true,
+        ?Closure $user_check = null, bool $dev_only = false,
+        ?array $allowed_location_types = [], bool $location_access_mode = self::LOCATION_ACCESS_INCLUSIVE,
+        bool $render_header = true, bool $render_sidebar = true, bool $render_topbar = true, bool $render_content = true
+    ): Route {
+        $route = new Route(
+            file_name: $file_name,
+            title: $title,
+            function_name: $function_name,
+            menu: $menu,
+
+            battle_type: $battle_type,
+            min_rank: $min_rank,
+            battle_ok: $battle_ok,
+            survivial_mission_ok: $survivial_mission_ok,
+            challenge_lock_oky: $challenge_lock_oky,
+            user_check: $user_check,
+            dev_only: $dev_only,
+
+            allowed_location_types: $allowed_location_types,
+            location_access_mode: Route::DEFAULT_ACCESS,
+
+            render_header: $render_header,
+            render_sidebar: $render_sidebar,
+            render_topbar: $render_topbar,
+            render_content: $render_content
+        );
+
+        // Update location access, by default all location types are allowed
+        if(count($allowed_location_types) > 0) {
+            // Inclusive access, only provided are allowed
+            if($location_access_mode == Route::LOCATION_ACCESS_INCLUSIVE) {
+                // All location types restriced by default
+                $this->allowed_location_types = array_fill_keys($this->allowed_location_types, false);
+
+                // Allow appropriate location types
+                foreach($allowed_location_types as $location) {
                     $this->allowed_location_types[$location] = true;
                 }
-            } else {
-                foreach ($allowed_location_types as $location) {
+            }
+            // Exclusive access, all but provided are allowed
+            else {
+                // Restrict provided location types
+                foreach($allowed_location_types as $location) {
                     $this->allowed_location_types[$location] = false;
                 }
             }
         }
+
+        return $route;
     }
 }

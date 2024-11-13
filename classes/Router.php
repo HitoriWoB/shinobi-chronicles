@@ -3,118 +3,70 @@
 require_once __DIR__ . "/battle/Battle.php";
 require_once __DIR__ . "/Route.php";
 
-// NOTES: Routes are initialized at the bottom of this file.
 class Router {
-    // Keep in sync with pages
-    const PAGE_IDS = [
-        'profile' => 1,
-        'inbox' => 2,
-        'settings' => 3,
-        'gear' => 5,
-        'members' => 6,
-        'chat' => 7,
-        'store' => 8,
-        'villageHQ' => 9,
-        'bloodline' => 10,
-        'travel' => 11,
-        'arena' => 12,
-        'training' => 13,
-        'mission' => 14,
-        'special_missions' => 15,
-        'mod' => 16,
-        'admin' => 17,
-        'report' => 18,
-        'battle' => 19,
-        'clan' => 20,
-        'premium' => 21,
-        'spar' => 22,
-        'healingShop' => 23,
-        'team' => 24,
-        'rankup' => 25,
-        'view_battles' => 26,
-        'event' => 27,
-        'marriage' => 29,
-        'support' => 30,
-        'chat_log' => 31,
-        'news' => 32,
-        'academy' => 33,
-        'account_record' => 34,
-        'send_money' => 35,
-        'forbiddenShop' => 36,
-        'war' => 37,
-        'challenge' => 38,
-    ];
+    // TODO: Refactor this as 'page', there's currently a lot of refactoring to do to be possible
+    const NAV_KEY = "page_name"; // Reserved key for links (e.g. https://url.com/?{NAV_KEY}={NAV_VALUE})
+    const DEFAULT_PAGE = "profile";
 
-    /** @var Route[] $routes */
-    public static array $routes;
+    public function __construct(
+        public readonly array $routes,
+        public readonly string $base_url,
+        public readonly ?string $current_route,
+        public readonly array $ext_links = [
+            'github' => 'https://github.com/elementum-games/shinobi-chronicles',
+            'discord' => 'https://discord.gg/Kx52dbXEf3',
+        ]
+    ){}
 
-    public string $base_url;
+    public function getApiLink(string $api_name): string {
+        $api_string = "api/" . $api_name . ".php";
 
-    public array $links = [
-        'github' => 'https://github.com/elementum-games/shinobi-chronicles',
-        'discord' => 'https://discord.gg/Kx52dbXEf3',
-    ];
-    public array $api_links = [
-        'battle' => ''
-    ];
-
-    public function __construct(string $base_url) {
-        $this->base_url = $base_url;
-
-        foreach(self::PAGE_IDS as $slug => $id) {
-            $this->links[$slug] = $this->base_url . '?id=' . $id;
+        // Check if requested api exists
+        if(!file_exists(__DIR__ . "/../" . $api_string)) {
+            throw new RuntimeExcepiont("Invalid API link requested ($api_name)!");
         }
 
-        $this->api_links['battle'] = $this->base_url . 'api/battle.php';
-        $this->api_links['inbox'] = $this->base_url . 'api/inbox.php';
-        $this->api_links['travel'] = $this->base_url . 'api/travel.php';
-        $this->api_links['notification'] = $this->base_url . 'api/notification.php';
-        $this->api_links['navigation'] = $this->base_url . 'api/navigation.php';
-        $this->api_links['user'] = $this->base_url . 'api/user.php';
-        $this->api_links['chat'] = $this->base_url . 'api/chat.php';
-        $this->api_links['news'] = $this->base_url . 'api/news.php';
-        $this->api_links['forbidden_shop'] = $this->base_url . 'api/forbidden_shop.php';
-        $this->api_links['village'] = $this->base_url . 'api/village.php';
-        $this->api_links['ramen_shop'] = $this->base_url . 'api/ramen_shop.php';
-        $this->api_links['admin'] = $this->base_url . 'api/admin.php';
+        return $this->base_url . $api_string;
     }
 
-    /**
-     * @param string $page_name
-     * @return string
-     * @throws RuntimeException
-     */
-    public function getUrl(string $page_name, array $url_params = []): string {
-        $id = self::PAGE_IDS[$page_name] ?? null;
-        if($id == null) {
-            throw new RuntimeException("Invalid page name!");
+    public function getPageLink(string $page_name, $url_params = []): string {
+        // Check if route exists
+        // Note: This is inteded for trouble shooting/dead link prevention
+        if(!isset($this->routes[$page_name])) {
+            throw new RuntimeException("Invalid page link requested ($page_name)!");
         }
 
-        $extra_params_str = "";
-        foreach($url_params as $key => $val) {
-            $extra_params_str .= "&{$key}={$val}";
+        $url = $this->base_url . "?" . self::NAV_KEY . "=$page_name";
+
+        // Set additional parameters
+        if(!empty($url_params)) {
+            foreach($url_params as $key => $val) {
+                $url .= "&" . $key . "=" . $val;
+            }
         }
 
-        return $this->base_url . '?id=' . $id . $extra_params_str;
+        return $url;
     }
 
-    /**
-     * @param Route $route
-     * @param User  $player
-     * @return void
-     * @throws RuntimeException
-     */
-    public function assertRouteIsValid(Route $route, User $player): void {
+    public function setCurrentRoute(string $param_name, string $param_value): null {
+        if(is_null($this->current_route)) {
+            $this->current_route = $this->base_url . '?'. $param_name . "=" . $param_value;
+        }
+        else {
+            $this->current_route .= "&" . $param_name . "=" . $param_value;
+        }
+    }
+
+    public function assertRouteIsValid(Route $route, User $player) {
         $system = $player->system;
-        $routes = self::$routes;
 
         // Dev only page
         if($route->dev_only && !$system->isDevEnvironment()) {
-            throw new RuntimeException("Invalid page!");
+            throw new RuntimeExcepiont("Invalid page!");
         }
 
         // Check for battle if page is restricted
-        if(isset($route->battle_ok) && $route->battle_ok === false) {
+        if($route->battle_ok === false) {
             if($player->battle_id) {
                 $contents_arr = [];
                 foreach($_GET as $key => $val) {
@@ -142,12 +94,13 @@ class Router {
         }
 
         // Check if challenge locked
-        if (isset($route->challenge_lock_ok) && $route->challenge_lock_ok === false) {
+        if ($route->challenge_lock_ok === false) {
             if ($player->locked_challenge > 0) {
                 throw new RuntimeException("You are unable to access this page while locked-in for battle!");
             }
         }
 
+        // Non-generic page restrictions
         if(isset($route->user_check)) {
             if(!($route->user_check instanceof Closure)) {
                 throw new RuntimeException("Invalid user check!");
@@ -165,6 +118,7 @@ class Router {
         if ($player_location_type == TravelManager::LOCATION_TYPE_HOME_VILLAGE) {
             if (!$route->allowed_location_types[TravelManager::LOCATION_TYPE_HOME_VILLAGE]) {
                 // Player is allowed in up to rank 3, then must go outside village
+                // TODO: Update this to be class level
                 if ($player->rank_num > 2) {
                     throw new RuntimeException("You cannot access this page while in a village!");
                 }
@@ -180,8 +134,13 @@ class Router {
             }
         }
     }
+
+    public static function load(string $base_url): Router {
+        // Note: Manage external ext_links in constructor, there shouldn't be many of these
+        return new Router(
+            routes: require __DIR__ . '/../config/routes.php',
+            base_url: $base_url,
+            current_route: null
+        );
+    }
 }
-
-Router::$routes = require __DIR__ . '/../config/routes.php';
-
-

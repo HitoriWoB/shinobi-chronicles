@@ -3,16 +3,12 @@
 session_start();
 $PAGE_LOAD_START = microtime(as_float: true);
 
-// Load system
+// Load classes & initilize system
 require_once("classes/_autoload.php");
 $system = System::initialize();
 
-// Display errors on dev
-if($system->isDevEnvironment()) {
-    ini_set(option: 'display_errors', value: 'On');
-}
-// Display errors on production for developers
-if(isset($_SESSION['user_id']) && in_array($_SESSION['user_id'], System::$developers)) {
+// Display errors on dev environments
+if(Auth::displayErrors(system: $system)) {
     ini_set(option: 'display_errors', value: 'On');
 }
 
@@ -22,29 +18,19 @@ if(isset($_GET['logout']) && $_GET['logout'] == 1) {
 }
 
 // Logged out
-if(!isset($_SESSION['user_id'])) {
-    $route = Router::$routes['home'];
+if(!isset($_SESSION['userid'])) {
+    $route = $system->router->routes['home'];
     $system->layout->renderBeforeContentHTML(
         system: $system,
-        player: null, // No need to check here, no session set
+        player: null, // No session started
         page_title: $route->title,
-        render_header: false, render_sidebar: false,
-        render_topbar: false, render_content: false
+
+        render_header: $route->render_header, render_sidebar: $route->render_sidebar,
+        render_topbar: $route->render_topbar, render_content: $route->render_content
     );
 
-    require (__DIR__ . '/pages/' . $route->file_name);
+    require(__DIR__ . '/pages/' . $route->file_name);
     ($route->function_name)();
-
-    // Calc page load time
-    $PAGE_LOAD_TIME = microtime(as_float: true) - $PAGE_LOAD_START;
-    $system->layout->renderAftercontentHTML(
-        system: $system,
-        player: null, // No need to check, no session started
-        page_load_time: $PAGE_LOAD_TIME,
-        render_content: false
-    );
-    $system->db->commitTransaction();
-    exit;
 }
 // Logged in
 else {
@@ -54,140 +40,127 @@ else {
         user_id: $_SESSION['user_id']
     );
 
-    // Check for logout
+    // Check for forced logout
     if($player->last_login < time() - (System::LOGOUT_LIMIT * 60)) {
         Auth::processLogout(system: $system);
         exit;
     }
 
-    // Load player data & close session as user is loaded
+    // Load player & close session as user is loaded
     $player->loadData();
     session_write_close();
 
     // Set layout
-    $layout = $system->setLayoutByName($player->layout);
+    $system->setLayoutByName($player->layout);
 
-    // Master system closure
+    // Game closure/maintenance
     if(!$system->SC_OPEN && !StaffManager::hasServerMaintAccess(staff_level: $player->staff_level)) {
+        $route = $system->router->routes['home'];
+
+        // User system layout here as
         $system->layout->renderBeforeContentHTML(
             system: $system,
             player: $player ?? null,
-            page_title: 'Home', render_header: $player ? true : false,
-            render_sidebar: false, render_topbar: false, render_content: false
+            page_title: $route->title,
+
+            render_header: $route->render_header, render_sidebar: $route->render_sidebar,
+            render_topbar: $route->render_topbar, render_content: $route->render_content
         );
 
-        $route = Router::$routes['home'];
-        require (__DIR__ . '/pages/' . $route->file_name);
-        ($route->function_name)();
-
-        // Calc page load time
-        $PAGE_LOAD_TIME = microtime(as_float: true) - $PAGE_LOAD_START;
-        $system->layout->renderAftercontentHTML(
-            system: $system,
-            player: null, // No need to check, no session started
-            page_load_time: $PAGE_LOAD_TIME,
-            render_content: false
-        );
-        $system->db->commitTransaction();
-        exit;
+        require(__DIR__ . '/pages/' . $route->file_name);
+        ($route->function())();
     }
-
-    // Check for game ban
-    if($player->checkBan(StaffManager::BAN_TYPE_GAME)) {
+    // User ban
+    elseif($player->checkBan(StaffManager::BAN_TYPE_GAME)) {
+        $route = $system->router->routes['account_record'];
         $ban_type = StaffManager::BAN_TYPE_GAME;
         $expire_int = $player->ban_data[$ban_type];
         $ban_expire = ($expire_int == StaffManager::PERM_BAN_VALUE ? $expire_int : $system->time_remaining($player->ban_data[StaffManager::BAN_TYPE_GAME] - time()));
 
-        //Display header
-        $layout->renderBeforeContentHTML($system, $player, "Profile");
+        $system->renderBeforeContentHTML(
+            system: $system,
+            player: $player,
+            page_title: "",
 
-        //Ban info
+            render_header: $route->render_header, render_sidebar: $route->render_sidebar,
+            render_topbar: $route->render_topbar, render_content: $route->render_content
+        );
+
+        // Display ban info
         require 'templates/ban_info.php';
 
         // Load user record
-        $route = Router::$routes[34];
-        require 'pages/' . $route->file_name;
-        ($route->function_name)();
-
-        // Footer
-        $layout->renderAfterContentHTML($system, $player);
-        exit;
+        require (__DIR__ . '/pages/' . $route->file_name);
+        ($route->function_name())();
     }
+    // IP ban
+    else if(Auth::checkForIPBan(system: $system, ip: $_SERVER['REMOTE_ADDR'])) {
+        $route = $system->router->routes['profile'];
+        
+        // Do not render content/bars for ip ban
+        $route->render_topbar = false;
+        $route->render_content = false;
+        $route->render_header = false;
+        $route->render_sidebar = false;
 
-    $result = $system->db->query(
-        "SELECT `id` FROM `banned_ips` WHERE `ip_address`='" . $system->db->clean($_SERVER['REMOTE_ADDR']) . "' LIMIT 1"
-    );
-    if($system->db->last_num_rows > 0) {
+        // Set ban data for display
         $ban_type = StaffManager::BAN_TYPE_IP;
         $expire_int = -1;
         $ban_expire = ($expire_int == StaffManager::PERM_BAN_VALUE ? $expire_int : $system->time_remaining($player->ban_data[StaffManager::BAN_TYPE_GAME] - time()));
 
-        $layout->renderBeforeContentHTML($system, $player, "Profile");
+        $system->layout->renderBeforeContentHTML(
+            system: $system,
+            player: $player,
+            page_title: "",
+
+            render_header: $route->render_header, render_sidebar: $route->render_sidebar,
+            render_topbar: $route->render_topbar, render_content: $route->render_content
+        );
 
         //Ban info
         require 'templates/ban_info.php';
-
-        // Footer
-        $layout->renderAfterContentHTML($system, $player);
-        exit;
-    }
-
-    // Clear global message
-    if(!$player->global_message_viewed && isset($_GET['clear_message'])) {
-        $player->global_message_viewed = 1;
-    }
-
-    // Log actions
-    if($player->log_actions) {
-        $log_contents = '';
-        if($_GET['id'] && isset($routes[$_GET['id']])) {
-            $log_contents .= 'Page: ' . $routes[$_GET['id']]['title'] . ' - Time: ' . round(microtime(true), 1) . '[br]';
-        }
-        foreach($_GET as $key => $value) {
-            $val = $value;
-            if($key == 'id') {
-                continue;
-            }
-            if(strlen($val) > 32) {
-                $val = substr($val, 0, 32) . '...';
-            }
-            $log_contents .= $key . ': ' . $val . '[br]';
-        }
-        foreach($_POST as $key => $value) {
-            $val = $value;
-            if(strpos($key, 'password') !== false) {
-                $val = '*******';
-            }
-            if(strlen($val) > 32) {
-                $val = substr($val, 0, 32) . '...';
-            }
-            $log_contents .= $key . ': ' . $val . '[br]';
-        }
-        $system->log('player_action', $player->user_name, $log_contents);
-    }
-
-    // Load requested page
-    $RENDER_CONTENT = true;
-    if(isset($_GET['home'])) {
-        $route = Router::$routes['home'];
-        $RENDER_CONTENT = false;
-        $system->layout->renderBeforeContentHTML(
-            system: $system,
-            player: null, // No need to check here, no session set
-            page_title: 'Home', render_header: $player ? true : false,
-            render_sidebar: false, render_topbar: false, render_content: $RENDER_CONTENT
-        );
-
-        require (__DIR__ . '/pages/' . $route->file_name);
-        ($route->function_name)();
     }
     else {
-        $id = isset($_GET['id']) ? (int)$_GET['id'] : Router::PAGE_IDS['profile'];
-        $route = Router::$routes[$id] ?? null;
+        // Clear global message
+        if(!$player->global_message_viewed && isset($_GET['clear_message'])) {
+            $player->global_message_viewed = true;
+        }
+
+        // Log actions
+        if($player->log_actions) {
+            $log_contents = '';
+            if($_GET['id'] && isset($routes[$_GET['id']])) {
+                $log_contents .= 'Page: ' . $routes[$_GET['id']]['title'] . ' - Time: ' . round(microtime(true), 1) . '[br]';
+            }
+            foreach($_GET as $key => $value) {
+                $val = $value;
+                if($key == 'id') {
+                    continue;
+                }
+                if(strlen($val) > 32) {
+                    $val = substr($val, 0, 32) . '...';
+                }
+                $log_contents .= $key . ': ' . $val . '[br]';
+            }
+            foreach($_POST as $key => $value) {
+                $val = $value;
+                if(strpos($key, 'password') !== false) {
+                    $val = '*******';
+                }
+                if(strlen($val) > 32) {
+                    $val = substr($val, 0, 32) . '...';
+                }
+                $log_contents .= $key . ': ' . $val . '[br]';
+            }
+            $system->log('player_action', $player->user_name, $log_contents);
+        }
+
+        $page = isset($_GET[Router::NAV_KEY]) ? $system->db->clean($_GET[Router::NAV_KEY]) : Router::DEFAULT_PAGE;
+        $route = $system->router->routes[$page] ?? null;
 
         try {
-            // Load page title
-            if($system->layout->usesV2Interface()) {
+           // Load page title
+           if($system->layout->usesV2Interface()) {
                 $location_name = $player->current_location->location_id
                     ? ' ' . ' <div id="contentHeaderLocation">' . " | " . $player->current_location->name . '</div>'
                     : null;
@@ -228,18 +201,33 @@ else {
             try {
                 $system->router->assertRouteIsValid(route: $route, player: $player);
             } catch(RuntimeException $e) {
+                // Display blank page with error only
                 $system->message($e->getMessage());
-                $system->layout->renderBeforeContentHTML(system: $system, player: $player ?? null, page_title: '');
+                $system->layout->renderBeforeContentHTML(
+                    system: $system,
+                    player: $player ?? null,
+                    page_title: ''
+                );
                 $system->printMessage(force_display: true);
-                exit;
+                $system->layout->renderAfterContentHTML(
+                    system: $system,
+                    player: $player ?? null,
+                    page_load_time: (microtime(as_float: true) - $PAGE_LOAD_START)
+                );
+                exit; // IMPORTANT: Exit here, unauthorized pages shouldn't commit transactions
             }
 
-            // Set self link
-            $self_link = $system->router->base_url . '?id=' . $id;
+            // Set current route
+            $system->router->setCurrentRoute(param_name: Router::NAV_KEY, param_value: $page);
 
             // Render page
             $system->layout->renderBeforeContentHTML(
-                system: $system, player: $player ?? null, page_title: $page_title
+                system: $system,
+                player: $player,
+                page_title: $page_title, // Custom page title set above, don't use Route
+    
+                render_header: $route->render_header, render_sidebar: $route->render_sidebar,
+                render_topbar: $route->render_topbar, render_content: $route->render_content
             );
 
             // Legacy event notification
@@ -247,9 +235,9 @@ else {
                 require_once ('templates/temp_event_header.php');
             }
 
-            require (__DIR__ . '/pages/' . $route->file_name);
+            require(__DIR__ . '/pages/' . $route->file_name);
             try {
-                ($route->function_name)();
+                ($route->function)();   
             } catch(DatabaseDeadlockException $e) {
                 // Wait random time between 100-500ms, then retry deadlocked transaction
                 $system->db->rollbackTransaction();
@@ -272,16 +260,18 @@ else {
                 $system->printMessage(true);
             }
         }
+
+        $player->updateData();
     }
-
-    // Render after content
-    $PAGE_LOAD_TIME = microtime(as_float: true) - $PAGE_LOAD_START;
-    $system->layout->renderAfterContentHTML(
-        system: $system, player: $player ?? null,
-        page_load_time: $PAGE_LOAD_TIME,
-        render_content: $RENDER_CONTENT
-    );
-
-    $player->updateData();
-    $system->db->commitTransaction();
 }
+
+
+$system->layout->renderAfterContentHTML(
+    system: $system,
+    player: $player ?? null,
+    page_load_time: (microtime(as_float: true) - $PAGE_LOAD_START),
+
+    render_header: $route ? $route->render_header : false, render_sidebar: $route ? $route->render_sidebar : false,
+    render_topbar: $route ? $route->render_topbar : false, render_content: $route ? $route->render_content : false
+);
+$system->db->commitTransaction();

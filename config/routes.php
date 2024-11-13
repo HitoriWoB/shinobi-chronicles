@@ -1,9 +1,9 @@
 <?php
 
 require_once __DIR__ . '/../classes/Route.php';
+require_once __DIR__ . '/../classes/travel/TravelManager.php';
+require_once __DIR__ . '/../classes/battle/Battle.php';
 
-// KEEP IDS IN SYNC WITH Router::PAGE_IDS
-// NEXT ID: 39 (i.e. if you add 28, update this to 29 to help other contributors)
 return $routes = [
     // Home page
     'home' => new Route(
@@ -11,61 +11,67 @@ return $routes = [
         title: 'Home',
         function_name: 'home',
         menu: Route::MENU_NONE,
+
+        // Content, header and bars disabled for home page
+        render_header: false,
+        render_sidebar: false,
+        render_topbar: false,
+        render_content: false,
     ),
     // User Menu
-    1 => new Route(
+    'profile' => new Route(
         file_name: 'profile.php',
         title: 'Profile',
         function_name: 'userProfile',
         menu: Route::MENU_USER,
     ),
-    2 => new Route(
+    'inbox' => new Route(
         file_name: 'inbox.php',
         title: 'Inbox',
         function_name: 'inbox',
         menu: Route::MENU_USER,
     ),
-    4 => new Route(
+    'jutsu' => new Route(
         file_name: 'jutsu.php',
         title: 'Jutsu',
         function_name: 'jutsu',
         menu: Route::MENU_USER,
         battle_ok: true,
     ),
-    5 => new Route(
+    'gear' => new Route(
         file_name: 'gear.php',
         title: 'Gear',
         function_name: 'gear',
         menu: Route::MENU_USER,
         battle_ok: false,
     ),
-    10 => new Route(
+    'bloodline' => new Route(
         file_name: 'bloodline.php',
         title: 'Bloodline',
         function_name: 'bloodline',
         menu: 'conditional',
         battle_ok: false,
     ),
-    6 => new Route(
+    'members' => new Route(
         file_name: 'members.php',
         title: 'Members',
         function_name: 'members',
         menu: Route::MENU_USER,
     ),
-    35 => new Route(
+    'send_money' => new Route(
         file_name: 'sendMoney.php',
         title: 'Send Money',
         function_name: 'sendMoney',
         menu: Route::MENU_NONE,
     ),
-    24 => new Route(
+    'team' => new Route(
         file_name: 'team.php',
         title: 'Team',
         function_name: 'team',
         menu: 'conditional',
         min_rank: 3,
     ),
-    29 => new Route(
+    'marriage' => new Route(
         file_name: 'marriage.php',
         title: 'Marriage',
         function_name: 'marriage',
@@ -73,13 +79,13 @@ return $routes = [
     ),
 
     // Activity Menu
-    7 => new Route(
+    'chat' => new Route(
         file_name: 'chat.php',
         title: 'Chat',
         function_name: 'chat',
         menu: Route::MENU_ACTIVITY,
     ),
-    11 => new Route(
+    'travel' => new Route(
         file_name: 'travel.php',
         title: 'Travel',
         function_name: 'travel',
@@ -88,7 +94,7 @@ return $routes = [
         survival_mission_ok: false,
         challenge_lock_ok: false,
     ),
-    12 => new Route(
+    'arena' => new Route(
         file_name: 'arena.php',
         title: 'Arena',
         function_name: 'arena',
@@ -97,7 +103,7 @@ return $routes = [
         allowed_location_types: [TravelManager::LOCATION_TYPE_DEFAULT],
         challenge_lock_ok: false,
     ),
-    13 => new Route(
+    'training' => new Route(
         file_name: 'training.php',
         title: 'Training',
         function_name: 'training',
@@ -105,7 +111,7 @@ return $routes = [
         battle_ok: false,
         allowed_location_types: [TravelManager::LOCATION_TYPE_DEFAULT],
     ),
-    14 => new Route(
+    'mission' => new Route(
         file_name: 'missions.php',
         title: 'Missions',
         function_name: 'missions',
@@ -114,7 +120,7 @@ return $routes = [
         min_rank: 2,
         challenge_lock_ok: false,
     ),
-    15 => new Route(
+    'special_mission' => new Route(
         file_name: 'special_missions.php',
         title: 'Special Missions',
         function_name: 'specialMissions',
@@ -123,7 +129,7 @@ return $routes = [
         battle_ok: false,
         challenge_lock_ok: false,
     ),
-    22 => new Route(
+    'spar' => new Route(
         file_name: 'spar.php',
         title: 'Spar',
         function_name: 'spar',
@@ -131,7 +137,7 @@ return $routes = [
         battle_type: Battle::TYPE_SPAR,
         challenge_lock_ok: false,
     ),
-    23 => new Route(
+    'ramen_shop' => new Route(
         file_name: 'healingShop.php',
         title: 'Ramen Shop',
         function_name: 'healingShop',
@@ -139,7 +145,7 @@ return $routes = [
         battle_ok: false,
         allowed_location_types: [TravelManager::LOCATION_TYPE_HOME_VILLAGE, TravelManager::LOCATION_TYPE_COLOSSEUM],
     ),
-    26 => new Route(
+    'view_battles' => new Route(
         file_name: 'viewBattles.php',
         title: 'View Battles',
         function_name: 'viewBattles',
@@ -148,34 +154,34 @@ return $routes = [
     ),
 
     // Village Menu
-    8 => new Route(
+    'shop' => new Route(
         file_name: 'store.php',
         title: 'Shop',
         function_name: 'store',
         menu: Route::MENU_VILLAGE,
         allowed_location_types: [TravelManager::LOCATION_TYPE_HOME_VILLAGE],
     ),
-    9 => new Route(
+    'village_hq' => new Route(
         file_name: 'villageHQ_v2.php',
         title: 'Village HQ',
         function_name: 'villageHQ',
         menu: Route::MENU_VILLAGE,
         battle_ok: false,
     ),
-    20 => new Route(
+    'clan' => new Route(
         file_name: 'clan.php',
         title: 'Clan',
         function_name: 'clan',
         menu: 'conditional',
     ),
-    21 => new Route(
+    'ancient_market' => new Route(
         file_name: 'premium_shop.php',
         title: 'Ancient Market',
         function_name: 'premiumShop',
         menu: Route::MENU_VILLAGE,
         challenge_lock_ok: false,
     ),
-    33 => new Route(
+    'academy' => new Route(
         file_name: 'academy.php',
         title: 'Academy',
         function_name: 'academy',
@@ -183,7 +189,7 @@ return $routes = [
     ),
 
     // Staff menu
-    30 => new Route(
+    'manage_support' => new Route(
         file_name: 'supportPanel.php',
         title: 'Support Panel',
         function_name: 'supportPanel',
@@ -192,7 +198,7 @@ return $routes = [
             return $u->isSupportStaff();
         }
     ),
-    16 => new Route(
+    'mod_panel' => new Route(
         file_name: 'modPanel.php',
         title: 'Mod Panel',
         function_name: 'modPanel',
@@ -201,7 +207,7 @@ return $routes = [
             return $u->isModerator();
         }
     ),
-    17 => new Route(
+    'admin_panel' => new Route(
         file_name: 'adminPanel.php',
         title: 'Admin Panel',
         function_name: 'adminPanel',
@@ -210,7 +216,7 @@ return $routes = [
             return $u->hasAdminPanel();
         }
     ),
-    31 => new Route(
+    'chat_log' => new Route(
         file_name: 'chat_log.php',
         title: 'Chat Log',
         function_name: 'chatLog',
@@ -221,64 +227,64 @@ return $routes = [
     ),
 
     // Misc
-    3 => new Route(
+    'settings' => new Route(
         file_name: 'settings.php',
         title: 'Settings',
         function_name: 'userSettings',
         menu: Route::MENU_USER,
     ),
-    18 => new Route(
+    'report' => new Route(
         file_name: 'report.php',
         title: 'Report',
         function_name: 'report',
         menu: Route::MENU_CONDITIONAL,
     ),
-    19 => new Route(
+    'battle' => new Route(
         file_name: 'battle.php',
         title: 'Battle',
         function_name: 'battle',
         menu: Route::MENU_NONE,
         battle_type: Battle::TYPE_FIGHT,
     ),
-    25 => new Route(
+    'level_up' => new Route(
         file_name: 'levelUp.php',
         title: 'Rank Exam',
         function_name: 'rankUp',
         menu: Route::MENU_NONE,
         battle_type: Battle::TYPE_AI_RANKUP,
     ),
-    27 => new Route(
+    'event' => new Route(
         file_name: 'event.php',
         title: 'Event',
         function_name: 'event',
         menu: Route::MENU_NONE,
     ),
-    32 => new Route(
+    'news' => new Route(
         file_name: 'news.php',
         title: 'News',
         function_name: 'news',
         menu: Route::MENU_NONE,
     ),
-    34 => new Route(
+    'account_record' => new Route(
         file_name: 'accountRecord.php',
         title: 'Account Record',
         function_name: 'accountRecord',
         menu: Route::MENU_NONE,
     ),
-    36 => new Route(
+    'forbidden_shop' => new Route(
         file_name: 'forbiddenShop.php',
         title: "???",
         function_name: 'forbiddenShop',
         menu: Route::MENU_NONE,
     ),
-    37 => new Route(
+    'war' => new Route(
         file_name: 'war.php',
         title: "War",
         function_name: 'war',
         menu: Route::MENU_NONE,
         battle_type: Battle::TYPE_AI_WAR,
     ),
-    38 => new Route(
+    'challenge' => new Route(
         file_name: 'challenge.php',
         title: "Challenge",
         function_name: 'challenge',
